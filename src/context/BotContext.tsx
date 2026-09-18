@@ -37,6 +37,7 @@ import {
   INITIAL_USER_ROLES,
 } from '../data/mockData';
 import { sound } from '../utils/audio';
+import { loadPersisted, savePersisted } from '../utils/storage';
 
 interface BotContextType {
   bots: Bot[];
@@ -153,35 +154,24 @@ const BotContext = createContext<BotContextType | undefined>(undefined);
 
 export const BotProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Primary State
-  const [bots, setBots] = useState<Bot[]>(() => {
-    const saved = localStorage.getItem('minecontrol_bots');
-    return saved ? JSON.parse(saved) : INITIAL_BOTS;
-  });
+  // NOTE: reads are routed through utils/storage so that unavailable or
+  // corrupted localStorage (sandboxed iframes, private mode, stale saves)
+  // can never crash the initial render. Saved values are also re-hydrated
+  // against the default shape, so data written by an older build is upgraded
+  // instead of blowing up on a missing nested field.
+  const [bots, setBots] = useState<Bot[]>(() => loadPersisted('minecontrol_bots', INITIAL_BOTS));
 
-  const [servers, setServers] = useState<Server[]>(() => {
-    const saved = localStorage.getItem('minecontrol_servers');
-    return saved ? JSON.parse(saved) : INITIAL_SERVERS;
-  });
+  const [servers, setServers] = useState<Server[]>(() => loadPersisted('minecontrol_servers', INITIAL_SERVERS));
 
-  const [waypoints, setWaypoints] = useState<Waypoint[]>(() => {
-    const saved = localStorage.getItem('minecontrol_waypoints');
-    return saved ? JSON.parse(saved) : INITIAL_WAYPOINTS;
-  });
+  const [waypoints, setWaypoints] = useState<Waypoint[]>(() => loadPersisted('minecontrol_waypoints', INITIAL_WAYPOINTS));
 
-  const [routes, setRoutes] = useState<Route[]>(() => {
-    const saved = localStorage.getItem('minecontrol_routes');
-    return saved ? JSON.parse(saved) : INITIAL_ROUTES;
-  });
+  const [routes, setRoutes] = useState<Route[]>(() => loadPersisted('minecontrol_routes', INITIAL_ROUTES));
 
-  const [profiles, setProfiles] = useState<Profile[]>(() => {
-    const saved = localStorage.getItem('minecontrol_profiles');
-    return saved ? JSON.parse(saved) : INITIAL_PROFILES;
-  });
+  const [profiles, setProfiles] = useState<Profile[]>(() => loadPersisted('minecontrol_profiles', INITIAL_PROFILES));
 
-  const [automationRules, setAutomationRules] = useState<AutomationRule[]>(() => {
-    const saved = localStorage.getItem('minecontrol_rules');
-    return saved ? JSON.parse(saved) : INITIAL_AUTOMATION_RULES;
-  });
+  const [automationRules, setAutomationRules] = useState<AutomationRule[]>(() =>
+    loadPersisted('minecontrol_rules', INITIAL_AUTOMATION_RULES)
+  );
 
   const [capabilities] = useState<CapabilityItem[]>(CAPABILITY_CATALOG);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>(INITIAL_AUDIT_LOGS);
@@ -299,25 +289,29 @@ export const BotProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   ]);
 
-  // Sync to localStorage
+  // Sync to localStorage (never throws, silently degrades to in-memory)
   useEffect(() => {
-    localStorage.setItem('minecontrol_bots', JSON.stringify(bots));
+    savePersisted('minecontrol_bots', bots);
   }, [bots]);
 
   useEffect(() => {
-    localStorage.setItem('minecontrol_servers', JSON.stringify(servers));
+    savePersisted('minecontrol_servers', servers);
   }, [servers]);
 
   useEffect(() => {
-    localStorage.setItem('minecontrol_waypoints', JSON.stringify(waypoints));
+    savePersisted('minecontrol_waypoints', waypoints);
   }, [waypoints]);
 
   useEffect(() => {
-    localStorage.setItem('minecontrol_profiles', JSON.stringify(profiles));
+    savePersisted('minecontrol_routes', routes);
+  }, [routes]);
+
+  useEffect(() => {
+    savePersisted('minecontrol_profiles', profiles);
   }, [profiles]);
 
   useEffect(() => {
-    localStorage.setItem('minecontrol_rules', JSON.stringify(automationRules));
+    savePersisted('minecontrol_rules', automationRules);
   }, [automationRules]);
 
   // Audit logging helper

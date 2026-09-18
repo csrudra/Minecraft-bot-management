@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useBotContext } from '../context/BotContext';
+import { downloadFile } from '../utils/download';
 import { Bot, BotStatus } from '../types';
 import {
   Users,
@@ -50,7 +51,8 @@ export const BotManagerView: React.FC = () => {
     bulkSetProfile,
     exportBots,
     importBots,
-    setActiveView
+    setActiveView,
+    addNotification
   } = useBotContext();
 
   const [search, setSearch] = useState('');
@@ -88,7 +90,9 @@ export const BotManagerView: React.FC = () => {
 
   // Filtering
   const filteredBots = bots.filter(b => {
-    const matchesSearch = b.name.toLowerCase().includes(search.toLowerCase()) || b.group.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch =
+      (b.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (b.group || '').toLowerCase().includes(search.toLowerCase());
     const matchesGroup = selectedGroupFilter === 'all' || b.group === selectedGroupFilter;
     return matchesSearch && matchesGroup;
   });
@@ -121,13 +125,14 @@ export const BotManagerView: React.FC = () => {
 
   const handleExportJson = () => {
     const json = exportBots();
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `minecontrol-bots-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const ok = downloadFile(`minecontrol-bots-${Date.now()}.json`, json, 'application/json');
+    if (!ok) {
+      addNotification({
+        title: 'Export Blocked',
+        message: 'This environment blocks file downloads. The bot JSON is available via the import/export panel.',
+        severity: 'warning'
+      });
+    }
   };
 
   const handleImportJson = () => {

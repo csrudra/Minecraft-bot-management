@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useBotContext } from '../context/BotContext';
+import { downloadFile } from '../utils/download';
 import {
   Terminal,
   Search,
@@ -23,7 +24,8 @@ export const LiveConsoleView: React.FC = () => {
     setSelectedBotId,
     executeTerminalCommand,
     clearConsoleLogs,
-    exportConsoleLogs
+    exportConsoleLogs,
+    addNotification
   } = useBotContext();
 
   const [inputCmd, setInputCmd] = useState('');
@@ -36,8 +38,11 @@ export const LiveConsoleView: React.FC = () => {
 
   // Auto scroll to bottom
   useEffect(() => {
-    if (autoScroll && consoleEndRef.current) {
-      consoleEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    const el = consoleEndRef.current;
+    // scrollIntoView is not implemented in every environment (older engines,
+    // headless/jsdom, embedded webviews) — guard it so it can't crash the view.
+    if (autoScroll && el && typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
   }, [consoleLogs, autoScroll]);
 
@@ -50,13 +55,14 @@ export const LiveConsoleView: React.FC = () => {
 
   const handleExport = () => {
     const text = exportConsoleLogs();
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `console-logs-${Date.now()}.log`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const ok = downloadFile(`console-logs-${Date.now()}.log`, text, 'text/plain');
+    if (!ok) {
+      addNotification({
+        title: 'Export Blocked',
+        message: 'This environment blocks file downloads. Copy the log text from the console view instead.',
+        severity: 'warning'
+      });
+    }
   };
 
   const filteredLogs = consoleLogs.filter(log => {
@@ -187,9 +193,9 @@ export const LiveConsoleView: React.FC = () => {
             No matching console logs recorded. Type a command below to test.
           </div>
         ) : (
-          filteredLogs.map(log => {
+          filteredLogs.map((log, logIdx) => {
             return (
-              <div key={log.id} className="flex items-start space-x-2 leading-relaxed hover:bg-[#0c1424] px-1 py-0.5 rounded">
+              <div key={`${log.id}-${logIdx}`} className="flex items-start space-x-2 leading-relaxed hover:bg-[#0c1424] px-1 py-0.5 rounded">
                 <span className="text-slate-500 text-[11px] shrink-0 select-none">
                   [{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}]
                 </span>

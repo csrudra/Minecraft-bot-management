@@ -20,13 +20,15 @@ export const AnalyticsView: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'1h' | '6h' | '24h' | '7d'>('24h');
 
   // Aggregated Cluster Metrics
-  const totalUptimeSeconds = bots.reduce((acc, b) => acc + (b.stats.uptimeSeconds || 0), 0);
-  const totalDistance = bots.reduce((acc, b) => acc + (b.stats.distanceTraveledBlocks || 0), 0);
-  const totalBlocksMined = bots.reduce((acc, b) => acc + (b.mining.stats.blocksMined || 0), 0);
-  const totalKills = bots.reduce((acc, b) => acc + (b.stats.kills || 0), 0);
-  const totalDeaths = bots.reduce((acc, b) => acc + (b.stats.deaths || 0), 0);
-  const totalTasksCompleted = bots.reduce((acc, b) => acc + (b.stats.tasksCompleted || 0), 0);
-  const totalTasksFailed = bots.reduce((acc, b) => acc + (b.stats.tasksFailed || 0), 0);
+  // Optional chaining throughout: a bot restored from older persisted data may
+  // be missing a subsystem, and telemetry should still aggregate the rest.
+  const totalUptimeSeconds = bots.reduce((acc, b) => acc + (b.stats?.uptimeSeconds || 0), 0);
+  const totalDistance = bots.reduce((acc, b) => acc + (b.stats?.distanceTraveledBlocks || 0), 0);
+  const totalBlocksMined = bots.reduce((acc, b) => acc + (b.mining?.stats?.blocksMined || 0), 0);
+  const totalKills = bots.reduce((acc, b) => acc + (b.stats?.kills || 0), 0);
+  const totalDeaths = bots.reduce((acc, b) => acc + (b.stats?.deaths || 0), 0);
+  const totalTasksCompleted = bots.reduce((acc, b) => acc + (b.stats?.tasksCompleted || 0), 0);
+  const totalTasksFailed = bots.reduce((acc, b) => acc + (b.stats?.tasksFailed || 0), 0);
 
   const successRate = totalTasksCompleted + totalTasksFailed > 0
     ? ((totalTasksCompleted / (totalTasksCompleted + totalTasksFailed)) * 100).toFixed(1)
@@ -266,10 +268,10 @@ export const AnalyticsView: React.FC = () => {
                   <td className="py-2.5 px-3 font-bold text-slate-100">{bot.name}</td>
                   <td className="py-2.5 px-3 text-slate-400">{bot.group}</td>
                   <td className="py-2.5 px-3 text-emerald-300">{formatUptime(bot.uptime)}</td>
-                  <td className="py-2.5 px-3 text-cyan-300">{bot.mining.stats.blocksMined}</td>
-                  <td className="py-2.5 px-3 text-rose-300">{bot.stats.kills}</td>
-                  <td className="py-2.5 px-3 text-purple-300">{bot.stats.distanceTraveledBlocks.toFixed(0)}b</td>
-                  <td className="py-2.5 px-3 text-emerald-400 font-bold">{bot.stats.tasksCompleted}</td>
+                  <td className="py-2.5 px-3 text-cyan-300">{bot.mining?.stats?.blocksMined ?? 0}</td>
+                  <td className="py-2.5 px-3 text-rose-300">{bot.stats?.kills ?? 0}</td>
+                  <td className="py-2.5 px-3 text-purple-300">{(bot.stats?.distanceTraveledBlocks ?? 0).toFixed(0)}b</td>
+                  <td className="py-2.5 px-3 text-emerald-400 font-bold">{bot.stats?.tasksCompleted ?? 0}</td>
                 </tr>
               ))}
             </tbody>

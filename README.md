@@ -64,3 +64,20 @@ npm run dev
 npm run build
 npm run preview
 ```
+
+---
+
+## Troubleshooting
+
+**Dashboard is blank / a module shows nothing**
+The app no longer depends on browser storage being available: sandboxed iframes,
+private browsing and blocked third-party cookies all downgrade to in-memory state
+instead of failing. If a previously saved dataset is corrupt, it is discarded and
+the built-in demo data is restored automatically.
+
+If you ever see the recovery card ("Recovered from a crash"), use **Reset Saved
+Data & Reload** to clear the `minecontrol_*` localStorage keys, or clear them
+manually in DevTools → Application → Local Storage.
+
+Every view is wrapped in an error boundary, so one failing module can never blank
+out the rest of the control panel.

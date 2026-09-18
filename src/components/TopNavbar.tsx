@@ -57,7 +57,18 @@ export const TopNavbar: React.FC = () => {
     <header className="h-16 bg-[#0a0f1d] border-b border-[#1f2c47] flex items-center justify-between px-4 z-40 sticky top-0 select-none">
       {/* Brand & Global Stats */}
       <div className="flex items-center space-x-6">
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => window.location.reload()}>
+        <div
+          className="flex items-center space-x-3 cursor-pointer"
+          title="Reload dashboard"
+          onClick={() => {
+            // location.reload() can throw inside restricted/sandboxed frames.
+            try {
+              window.location.reload();
+            } catch {
+              /* ignore — the dashboard stays interactive */
+            }
+          }}
+        >
           <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 p-[2px] shadow-lg shadow-emerald-500/20">
             <div className="w-full h-full bg-[#0a0f1d] rounded-[6px] flex items-center justify-center">
               <span className="font-mono font-bold text-emerald-400 text-base">⬡</span>

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export const InteractionView: React.FC = () => {
-  const { selectedBot, botInventoryAction } = useBotContext();
+  const { selectedBot, botInventoryAction, addNotification } = useBotContext();
 
   const [reachDistance, setReachDistance] = useState(4.5);
   const [ghostHandEnabled, setGhostHandEnabled] = useState(false);
@@ -117,14 +117,24 @@ export const InteractionView: React.FC = () => {
             {/* Quick Actions */}
             <div className="grid grid-cols-2 gap-2 pt-2">
               <button
-                onClick={() => alert(`Sent right-click interact packet to target block at ${selectedBot.name} crosshair`)}
+                onClick={() => addNotification({
+                  title: 'Interaction Dispatched',
+                  message: `Sent right-click interact packet to the block under ${selectedBot.name}'s crosshair.`,
+                  severity: 'info',
+                  botId: selectedBot.id
+                })}
                 className="py-2 px-3 bg-[#16233a] hover:bg-[#1f2f4e] border border-[#243756] text-cyan-300 rounded-lg text-xs font-mono font-semibold transition-colors text-center"
               >
                 Send Right-Click Block
               </button>
 
               <button
-                onClick={() => alert(`Used held item in ${selectedBot.name} mainhand`)}
+                onClick={() => addNotification({
+                  title: 'Item Used',
+                  message: `Used the held item in ${selectedBot.name}'s main hand.`,
+                  severity: 'success',
+                  botId: selectedBot.id
+                })}
                 className="py-2 px-3 bg-[#16233a] hover:bg-[#1f2f4e] border border-[#243756] text-emerald-300 rounded-lg text-xs font-mono font-semibold transition-colors text-center"
               >
                 Use Held Item / Potion
@@ -163,13 +173,23 @@ export const InteractionView: React.FC = () => {
                 Auto-Sort Chest
               </button>
               <button
-                onClick={() => alert(`Deposited non-essential ores to ${selectedContainer}`)}
+                onClick={() => addNotification({
+                  title: 'Deposit Complete',
+                  message: `Deposited non-essential ores into ${selectedContainer}.`,
+                  severity: 'success',
+                  botId: selectedBot.id
+                })}
                 className="py-2 px-2 bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/40 text-cyan-300 rounded-lg text-center transition-colors text-[11px]"
               >
                 Quick Deposit All
               </button>
               <button
-                onClick={() => alert(`Restocked food and torches from ${selectedContainer}`)}
+                onClick={() => addNotification({
+                  title: 'Supplies Restocked',
+                  message: `Restocked food and torches from ${selectedContainer}.`,
+                  severity: 'info',
+                  botId: selectedBot.id
+                })}
                 className="py-2 px-2 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 rounded-lg text-center transition-colors text-[11px]"
               >
                 Refill Supplies

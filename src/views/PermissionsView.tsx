@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useBotContext } from '../context/BotContext';
+import { downloadFile } from '../utils/download';
 import {
   KeyRound,
   Shield,
@@ -17,7 +18,8 @@ export const PermissionsView: React.FC = () => {
     allUserRoles,
     currentUserRole,
     setCurrentUserRole,
-    auditLogs
+    auditLogs,
+    addNotification
   } = useBotContext();
 
   const [searchAudit, setSearchAudit] = useState('');
@@ -29,13 +31,14 @@ export const PermissionsView: React.FC = () => {
 
   const handleExportAudit = () => {
     const json = JSON.stringify(auditLogs, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `audit-trail-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const ok = downloadFile(`audit-trail-${Date.now()}.json`, json, 'application/json');
+    if (!ok) {
+      addNotification({
+        title: 'Export Blocked',
+        message: 'This environment blocks file downloads. The audit trail is still visible in the table below.',
+        severity: 'warning'
+      });
+    }
   };
 
   return (
