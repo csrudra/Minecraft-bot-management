@@ -2,6 +2,7 @@ import React from 'react';
 import { BotProvider, useBotContext } from './context/BotContext';
 import { TopNavbar } from './components/TopNavbar';
 import { Sidebar } from './components/Sidebar';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Views
 import { DashboardView } from './views/DashboardView';
@@ -25,6 +26,30 @@ import { PermissionsView } from './views/PermissionsView';
 import { AnalyticsView } from './views/AnalyticsView';
 import { NotificationsCenterView } from './views/NotificationsCenterView';
 import { DevModeView } from './views/DevModeView';
+
+const VIEW_LABELS: Record<string, string> = {
+  dashboard: 'Dashboard',
+  bots: 'Bot Manager',
+  servers: 'Server Manager',
+  movement: 'Movement & Mobility',
+  combat: 'Combat Automation',
+  interaction: 'Interaction Tools',
+  survival: 'Survival Automation',
+  mining: 'Mining Automation',
+  farming: 'Farming Automation',
+  navigation: 'Navigation & Map',
+  builder: 'Automation Builder',
+  profiles: 'Profiles',
+  inventory: 'Inventory Manager',
+  console: 'Live Console',
+  chat: 'Chat Interface',
+  reliability: 'Anti-Disconnect',
+  capabilities: 'Capability Scanner',
+  permissions: 'Permissions & Audit',
+  analytics: 'Analytics & Stats',
+  notifications: 'Notifications',
+  devmode: 'Developer / Packets',
+};
 
 const MainContent: React.FC = () => {
   const { activeView } = useBotContext();
@@ -80,22 +105,31 @@ const MainContent: React.FC = () => {
 
   return (
     <div className="flex-1 overflow-y-auto bg-[#070b14] relative">
-      {renderView()}
+      {/* Keyed by activeView: switching modules automatically clears a crash. */}
+      <ErrorBoundary label={VIEW_LABELS[activeView] || 'Dashboard'} resetKey={activeView}>
+        {renderView()}
+      </ErrorBoundary>
     </div>
   );
 };
 
 export const App: React.FC = () => {
   return (
-    <BotProvider>
-      <div className="min-h-screen flex flex-col bg-[#070b14] text-slate-100 font-sans">
-        <TopNavbar />
-        <div className="flex-1 flex overflow-hidden">
-          <Sidebar />
-          <MainContent />
+    <ErrorBoundary label="Application">
+      <BotProvider>
+        <div className="min-h-screen flex flex-col bg-[#070b14] text-slate-100 font-sans">
+          <ErrorBoundary label="Top Bar">
+            <TopNavbar />
+          </ErrorBoundary>
+          <div className="flex-1 flex overflow-hidden">
+            <ErrorBoundary label="Navigation">
+              <Sidebar />
+            </ErrorBoundary>
+            <MainContent />
+          </div>
         </div>
-      </div>
-    </BotProvider>
+      </BotProvider>
+    </ErrorBoundary>
   );
 };
 

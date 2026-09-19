@@ -24,6 +24,7 @@ export const CapabilityView: React.FC = () => {
   const server = servers.find(s => s.id === selectedBot?.serverId) || servers[0];
 
   const handleScan = () => {
+    if (!server) return;
     setIsScanning(true);
     setTimeout(() => {
       setIsScanning(false);
@@ -60,7 +61,7 @@ export const CapabilityView: React.FC = () => {
 
         <button
           onClick={handleScan}
-          disabled={isScanning}
+          disabled={isScanning || !server}
           className="px-3.5 py-1.5 text-xs font-mono font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center space-x-1.5 transition-colors shadow-lg shadow-emerald-950/40 disabled:opacity-50"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />

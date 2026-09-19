@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useBotContext } from '../context/BotContext';
+import { downloadFile } from '../utils/download';
 import { Profile } from '../types';
 import {
   Layers,
@@ -28,7 +29,8 @@ export const ProfilesView: React.FC = () => {
     removeProfile,
     assignProfileToBot,
     bots,
-    bulkSetProfile
+    bulkSetProfile,
+    addNotification
   } = useBotContext();
 
   const [activeProfileId, setActiveProfileId] = useState<string>(profiles[0]?.id || '');
@@ -43,13 +45,14 @@ export const ProfilesView: React.FC = () => {
 
   const handleExportProfile = (prof: Profile) => {
     const json = JSON.stringify(prof, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `profile-${prof.name.toLowerCase().replace(/\s+/g, '-')}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const ok = downloadFile(`profile-${prof.name.toLowerCase().replace(/\s+/g, '-')}.json`, json, 'application/json');
+    if (!ok) {
+      addNotification({
+        title: 'Export Blocked',
+        message: 'This environment blocks file downloads. The profile configuration remains active in this dashboard.',
+        severity: 'warning'
+      });
+    }
   };
 
   const handleCreateProfile = (e: React.FormEvent) => {

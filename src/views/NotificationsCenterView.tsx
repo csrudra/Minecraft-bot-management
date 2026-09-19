@@ -35,7 +35,13 @@ export const NotificationsCenterView: React.FC = () => {
 
   const handleTestWebhook = () => {
     if (!webhookUrl.trim()) {
-      alert('Please enter a Discord or Slack Webhook URL to test');
+      // In-app warning: window.alert is silently blocked inside sandboxed
+      // preview iframes, so feedback must come from the app itself.
+      addNotification({
+        title: 'Webhook URL Required',
+        message: 'Enter a Discord or Slack webhook URL before dispatching a test payload.',
+        severity: 'warning'
+      });
       return;
     }
     addNotification({
